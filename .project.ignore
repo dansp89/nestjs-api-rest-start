@@ -1,0 +1,14 @@
+node_modules/
+.vscode/
+dist/
+prisma/migrations/
+test/
+.project.ignore
+favicon.png
+generate-secret.js
+nest-cli.json
+README.md
+scan.js
+tsconfig.build.json
+tsconfig.json
+yarn.lock

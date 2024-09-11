@@ -1,0 +1,3 @@
+p, admin, /user, get
+p, admin, /user, post
+g, user, admin

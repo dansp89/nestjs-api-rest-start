@@ -1,0 +1,3765 @@
+@file: /home/dev/projects/nestjs-prisma/.env
+# Environment variables declared in this file are automatically made available to Prisma.
+# See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+PORT=4004
+DATABASE_URL=postgresql://postgres:root@localhost:5432/nestjs_prisma?schema=public
+JWT_SECRET=342fb00a00e080ab1f0a687190a1d76b02b8cf285fa76eb790c7bda75e08de47e40d4038dcd2970838e1877ff76d57baa38e51bb590c2b7fccc51c8fb1dfb0e1
+JWT_EXPIRE=1h
+
+# SMTP OPTIONS
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=username
+SMTP_PASS=password
+EMAIL_FROM="No Reply <no-reply@example.com>"
+
+# SWAGGER OPTIONS
+SWAGGER_URL_DOCS=docs
+SWAGGER_SITE_TITLE=My Swagger APP
+SWAGGER_TITLE=My Swagger APP
+SWAGGER_VERSION=1.0.1
+SWAGGER_DESC=My Swagger API documentation!!!
+SWAGGER_TOSLINK=#
+SWAGGER_API_EMAIL_TEXT=Team
+SWAGGER_API_EMAIL_EMAIL=email@domain.ext,
+SWAGGER_LICENSE_TEXT=Apache 2.0
+SWAGGER_LICENSE_LINK=http://www.apache.org/licenses/LICENSE-2.0.html
+SWAGGER_SERVER_PROD=http://localhost:4004
+SWAGGER_SERVER_SANDBOX=http://localhost:4005
+SWAGGER_SERVER_LOCAL=http://localhost:4006
+# SWAGGER_FAVICON=favicon.png # Not working
+
+# OPTIONS APP
+DIR_UPLOADS=uploads
+X_POWERED="DanSP.DEV"
+CRUD_IGNORE=User,File
+
+@file: /home/dev/projects/nestjs-prisma/.eslintrc.js
+module.exports = {
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: 'tsconfig.json',
+    tsconfigRootDir: __dirname,
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint/eslint-plugin'],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
+  root: true,
+  env: {
+    node: true,
+    jest: true,
+  },
+  ignorePatterns: ['.eslintrc.js'],
+  rules: {
+    '@typescript-eslint/interface-name-prefix': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+  },
+};
+
+@file: /home/dev/projects/nestjs-prisma/.git/HEAD
+ref: refs/heads/master
+
+@file: /home/dev/projects/nestjs-prisma/.git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+
+@file: /home/dev/projects/nestjs-prisma/.git/description
+Unnamed repository; edit this file 'description' to name the repository.
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/applypatch-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+commitmsg="$(git rev-parse --git-path hooks/commit-msg)"
+test -x "$commitmsg" && exec "$commitmsg" ${1+"$@"}
+:
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/fsmonitor-watchman.sample
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+# An example hook script to integrate Watchman
+# (https://facebook.github.io/watchman/) with git to speed up detecting
+# new and modified files.
+#
+# The hook is passed a version (currently 2) and last update token
+# formatted as a string and outputs to stdout a new update token and
+# all files that have been modified since the update token. Paths must
+# be relative to the root of the working tree and separated by a single NUL.
+#
+# To enable this hook, rename this file to "query-watchman" and set
+# 'git config core.fsmonitor .git/hooks/query-watchman'
+#
+my ($version, $last_update_token) = @ARGV;
+
+# Uncomment for debugging
+# print STDERR "$0 $version $last_update_token\n";
+
+# Check the hook interface version
+if ($version ne 2) {
+	die "Unsupported query-fsmonitor hook version '$version'.\n" .
+	    "Falling back to scanning...\n";
+}
+
+my $git_work_tree = get_working_dir();
+
+my $retry = 1;
+
+my $json_pkg;
+eval {
+	require JSON::XS;
+	$json_pkg = "JSON::XS";
+	1;
+} or do {
+	require JSON::PP;
+	$json_pkg = "JSON::PP";
+};
+
+launch_watchman();
+
+sub launch_watchman {
+	my $o = watchman_query();
+	if (is_work_tree_watched($o)) {
+		output_result($o->{clock}, @{$o->{files}});
+	}
+}
+
+sub output_result {
+	my ($clockid, @files) = @_;
+
+	# Uncomment for debugging watchman output
+	# open (my $fh, ">", ".git/watchman-output.out");
+	# binmode $fh, ":utf8";
+	# print $fh "$clockid\n@files\n";
+	# close $fh;
+
+	binmode STDOUT, ":utf8";
+	print $clockid;
+	print "\0";
+	local $, = "\0";
+	print @files;
+}
+
+sub watchman_clock {
+	my $response = qx/watchman clock "$git_work_tree"/;
+	die "Failed to get clock id on '$git_work_tree'.\n" .
+		"Falling back to scanning...\n" if $? != 0;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub watchman_query {
+	my $pid = open2(\*CHLD_OUT, \*CHLD_IN, 'watchman -j --no-pretty')
+	or die "open2() failed: $!\n" .
+	"Falling back to scanning...\n";
+
+	# In the query expression below we're asking for names of files that
+	# changed since $last_update_token but not from the .git folder.
+	#
+	# To accomplish this, we're using the "since" generator to use the
+	# recency index to select candidate nodes and "fields" to limit the
+	# output to file names only. Then we're using the "expression" term to
+	# further constrain the results.
+	if (substr($last_update_token, 0, 1) eq "c") {
+		$last_update_token = "\"$last_update_token\"";
+	}
+	my $query = <<"	END";
+		["query", "$git_work_tree", {
+			"since": $last_update_token,
+			"fields": ["name"],
+			"expression": ["not", ["dirname", ".git"]]
+		}]
+	END
+
+	# Uncomment for debugging the watchman query
+	# open (my $fh, ">", ".git/watchman-query.json");
+	# print $fh $query;
+	# close $fh;
+
+	print CHLD_IN $query;
+	close CHLD_IN;
+	my $response = do {local $/; <CHLD_OUT>};
+
+	# Uncomment for debugging the watch response
+	# open ($fh, ">", ".git/watchman-response.json");
+	# print $fh $response;
+	# close $fh;
+
+	die "Watchman: command returned no output.\n" .
+	"Falling back to scanning...\n" if $response eq "";
+	die "Watchman: command returned invalid output: $response\n" .
+	"Falling back to scanning...\n" unless $response =~ /^\{/;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub is_work_tree_watched {
+	my ($output) = @_;
+	my $error = $output->{error};
+	if ($retry > 0 and $error and $error =~ m/unable to resolve root .* directory (.*) is not watched/) {
+		$retry--;
+		my $response = qx/watchman watch "$git_work_tree"/;
+		die "Failed to make watchman watch '$git_work_tree'.\n" .
+		    "Falling back to scanning...\n" if $? != 0;
+		$output = $json_pkg->new->utf8->decode($response);
+		$error = $output->{error};
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		# Uncomment for debugging watchman output
+		# open (my $fh, ">", ".git/watchman-output.out");
+		# close $fh;
+
+		# Watchman will always return all files on the first query so
+		# return the fast "everything is dirty" flag to git and do the
+		# Watchman query just to get it over with now so we won't pay
+		# the cost in git to look up each individual file.
+		my $o = watchman_clock();
+		$error = $output->{error};
+
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		output_result($o->{clock}, ("/"));
+		$last_update_token = $o->{clock};
+
+		eval { launch_watchman() };
+		return 0;
+	}
+
+	die "Watchman: $error.\n" .
+	"Falling back to scanning...\n" if $error;
+
+	return 1;
+}
+
+sub get_working_dir {
+	my $working_dir;
+	if ($^O =~ 'msys' || $^O =~ 'cygwin') {
+		$working_dir = Win32::GetCwd();
+		$working_dir =~ tr/\\/\//;
+	} else {
+		require Cwd;
+		$working_dir = Cwd::cwd();
+	}
+
+	return $working_dir;
+}
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/post-update.sample
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-applypatch.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+precommit="$(git rev-parse --git-path hooks/pre-commit)"
+test -x "$precommit" && exec "$precommit" ${1+"$@"}
+:
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+  git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-merge-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git merge" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message to
+# stderr if it wants to stop the merge commit.
+#
+# To enable this hook, rename this file to "pre-merge-commit".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+        exec "$GIT_DIR/hooks/pre-commit"
+:
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-push.sample
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local oid> <remote ref> <remote oid>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
+
+remote="$1"
+url="$2"
+
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+
+while read local_ref local_oid remote_ref remote_oid
+do
+	if test "$local_oid" = "$zero"
+	then
+		# Handle delete
+		:
+	else
+		if test "$remote_oid" = "$zero"
+		then
+			# New branch, examine all commits
+			range="$local_oid"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_oid..$local_oid"
+		fi
+
+		# Check for WIP commit
+		commit=$(git rev-list -n 1 --grep '^WIP' "$range")
+		if test -n "$commit"
+		then
+			echo >&2 "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-rebase.sample
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
+
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
+
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
+
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
+
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
+}
+
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up to date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+<<\DOC_END
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
+
+ * A has one fix since it was merged up to "next".
+
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".
+
+DOC_END
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/pre-receive.sample
+#!/bin/sh
+#
+# An example hook script to make use of push options.
+# The example simply echoes all push options that start with 'echoback='
+# and rejects all pushes when the "reject" push option is used.
+#
+# To enable this hook, rename this file to "pre-receive".
+
+if test -n "$GIT_PUSH_OPTION_COUNT"
+then
+	i=0
+	while test "$i" -lt "$GIT_PUSH_OPTION_COUNT"
+	do
+		eval "value=\$GIT_PUSH_OPTION_$i"
+		case "$value" in
+		echoback=*)
+			echo "echo from the pre-receive-hook: ${value#*=}" >&2
+			;;
+		reject)
+			exit 1
+		esac
+		i=$((i + 1))
+	done
+fi
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/prepare-commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+
+# This hook includes three examples. The first one removes the
+# "# Please enter the commit message..." help message.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+/usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+# case "$COMMIT_SOURCE,$SHA1" in
+#  ,|template,)
+#    /usr/bin/perl -i.bak -pe '
+#       print "\n" . `git diff --cached --name-status -r`
+# 	 if /^#/ && $first++ == 0' "$COMMIT_MSG_FILE" ;;
+#  *) ;;
+# esac
+
+# SOB=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# git interpret-trailers --in-place --trailer "$SOB" "$COMMIT_MSG_FILE"
+# if test -z "$COMMIT_SOURCE"
+# then
+#   /usr/bin/perl -i.bak -pe 'print "\n" if !$first_line++' "$COMMIT_MSG_FILE"
+# fi
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/push-to-checkout.sample
+#!/bin/sh
+
+# An example hook script to update a checked-out tree on a git push.
+#
+# This hook is invoked by git-receive-pack(1) when it reacts to git
+# push and updates reference(s) in its repository, and when the push
+# tries to update the branch that is currently checked out and the
+# receive.denyCurrentBranch configuration variable is set to
+# updateInstead.
+#
+# By default, such a push is refused if the working tree and the index
+# of the remote repository has any difference from the currently
+# checked out commit; when both the working tree and the index match
+# the current commit, they are updated to match the newly pushed tip
+# of the branch. This hook is to be used to override the default
+# behaviour; however the code below reimplements the default behaviour
+# as a starting point for convenient modification.
+#
+# The hook receives the commit with which the tip of the current
+# branch is going to be updated:
+commit=$1
+
+# It can exit with a non-zero status to refuse the push (when it does
+# so, it must not modify the index or the working tree).
+die () {
+	echo >&2 "$*"
+	exit 1
+}
+
+# Or it can make any necessary changes to the working tree and to the
+# index to bring them to the desired state when the tip of the current
+# branch is updated to the new commit, and exit with a zero status.
+#
+# For example, the hook can simply run git read-tree -u -m HEAD "$1"
+# in order to emulate git fetch that is run in the reverse direction
+# with git push, as the two-tree form of git read-tree -u -m is
+# essentially the same as git switch or git checkout that switches
+# branches while keeping the local changes in the working tree that do
+# not interfere with the difference between the branches.
+
+# The below is a more-or-less exact translation to shell of the C code
+# for the default behaviour for git's push-to-checkout hook defined in
+# the push_to_deploy() function in builtin/receive-pack.c.
+#
+# Note that the hook will be executed from the repository directory,
+# not from the working tree, so if you want to perform operations on
+# the working tree, you will have to adapt your code accordingly, e.g.
+# by adding "cd .." or using relative paths.
+
+if ! git update-index -q --ignore-submodules --refresh
+then
+	die "Up-to-date check failed"
+fi
+
+if ! git diff-files --quiet --ignore-submodules --
+then
+	die "Working directory has unstaged changes"
+fi
+
+# This is a rough translation of:
+#
+#   head_has_history() ? "HEAD" : EMPTY_TREE_SHA1_HEX
+if git cat-file -e HEAD 2>/dev/null
+then
+	head=HEAD
+else
+	head=$(git hash-object -t tree --stdin </dev/null)
+fi
+
+if ! git diff-index --quiet --cached --ignore-submodules $head --
+then
+	die "Working directory has staged changes"
+fi
+
+if ! git read-tree -u -m "$commit"
+then
+	die "Could not update working tree to new HEAD"
+fi
+
+@file: /home/dev/projects/nestjs-prisma/.git/hooks/update.sample
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --type=bool hooks.allowunannotated)
+allowdeletebranch=$(git config --type=bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --type=bool hooks.denycreatebranch)
+allowdeletetag=$(git config --type=bool hooks.allowdeletetag)
+allowmodifytag=$(git config --type=bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+@file: /home/dev/projects/nestjs-prisma/.git/info/exclude
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+@file: /home/dev/projects/nestjs-prisma/.gitignore
+# compiled output
+/dist
+/node_modules
+/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+@file: /home/dev/projects/nestjs-prisma/.prettierrc
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "semi": true
+}
+
+@file: /home/dev/projects/nestjs-prisma/config/env.ts
+// @file: config/env.ts
+
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+export function env(key: string, defaultValue?: any): any {
+  return process.env[key] || defaultValue || '';
+}
+
+@file: /home/dev/projects/nestjs-prisma/package.json
+{
+  "name": "nestjs-prisma",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate": "npx prisma migrate dev --name init",
+    "crud": "npx prisma migrate dev --name init && ts-node src/core/generate.ts",
+    "start:server": "nest start",
+    "start:frontend": "yarn workspace frontend dev",
+    "start:2": "concurrently \"yarn start:server\" \"yarn start:frontend\"",
+    "secret": "node generate-secret.js",
+    "scan": "node scan.js"
+  },
+  "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.2.3",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
+    "@nestjs/platform-express": "^10.4.1",
+    "@nestjs/swagger": "^7.4.0",
+    "@prisma/client": "^5.19.1",
+    "bcrypt": "^5.1.1",
+    "casbin": "^5.30.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.4.5",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.15",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "prisma": "^5.19.1",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.5",
+    "@nestjs/schematics": "^10.0.0",
+    "@nestjs/testing": "^10.0.0",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "@types/supertest": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.0",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/prisma/schema.prisma
+// @file: prisma/schema.prisma
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  role             String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  permissions RolePermission[] @relation("RolePermissionsRelation")
+}
+
+model Permission {
+  id    String           @id @default(uuid())
+  name  String           @unique
+  roles RolePermission[] @relation("PermissionRolesRelation")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation("RolePermissionsRelation", fields: [roleId], references: [id])
+  permission   Permission @relation("PermissionRolesRelation", fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Personalizados!
+
+model Product {
+  id                String          @id @default(uuid())
+  name              String
+  description       String?
+  variations        Variation[]
+  stock             Stock[]
+  franchiseCenter   FranchiseCenter @relation(fields: [franchiseCenterId], references: [id])
+  franchiseCenterId String
+  prices            Price[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // @@map("products") // Nome da tabela no banco de dados
+}
+
+model Variation {
+  id        String   @id @default(uuid())
+  name      String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("variations") // Nome da tabela no banco de dados
+}
+
+model Stock {
+  id        String   @id @default(uuid())
+  quantity  Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("stock") // Nome da tabela no banco de dados
+}
+
+model FranchiseCenter {
+  id        String    @id @default(uuid())
+  name      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // @@map("franchise_centers") // Nome da tabela no banco de dados
+}
+
+model Price {
+  id        String   @id @default(uuid())
+  amount    Float
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("prices") // Nome da tabela no banco de dados
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/franchiseCenter/franchiseCenter.controller.ts
+// @file: src/api/franchiseCenter/franchiseCenter.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { FranchiseCenterService } from '@/src/api/franchiseCenter/franchiseCenter.service';
+import { FranchiseCenterType } from '@/src/types/prisma';
+
+@ApiTags('FranchiseCenter')
+@Controller('franchiseCenter')
+export class FranchiseCenterController {
+  constructor(private readonly franchiseCenterService: FranchiseCenterService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a franchiseCenter' })
+  @ApiResponse({
+    status: 201,
+    description: 'The franchiseCenter has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createFranchiseCenterDto: Omit<FranchiseCenterType, 'id'>,
+  ): Promise<FranchiseCenterType> {
+        return this.franchiseCenterService.create(createFranchiseCenterDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all franchiseCenters' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all franchiseCenters.',
+  })
+  async findAll(): Promise<FranchiseCenterType[]> {
+        return this.franchiseCenterService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a franchiseCenter by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the franchiseCenter.',
+  })
+  @ApiResponse({ status: 404, description: 'FranchiseCenter not found.' })
+  async findOne(@Param('id') id: string): Promise<FranchiseCenterType> {
+        return this.franchiseCenterService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a franchiseCenter by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The franchiseCenter has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'FranchiseCenter not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateFranchiseCenterDto: Partial<FranchiseCenterType>,
+  ): Promise<FranchiseCenterType> {
+        return this.franchiseCenterService.update(id, updateFranchiseCenterDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a franchiseCenter by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The franchiseCenter has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'FranchiseCenter not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+        return this.franchiseCenterService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/franchiseCenter/franchiseCenter.module.ts
+// @file: src/api/franchiseCenter/franchiseCenter.module.ts
+
+import { Module } from '@nestjs/common';
+import { FranchiseCenterController } from '@/src/api/franchiseCenter/franchiseCenter.controller';
+import { FranchiseCenterService } from '@/src/api/franchiseCenter/franchiseCenter.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [FranchiseCenterController],
+  providers: [FranchiseCenterService],
+})
+export class FranchiseCenterModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/franchiseCenter/franchiseCenter.service.ts
+// @file: src/api/franchiseCenter/franchiseCenter.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { FranchiseCenterType } from '@/src/types/prisma';
+
+@Injectable()
+export class FranchiseCenterService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createFranchiseCenterDto: Omit<FranchiseCenterType, 'id'>): Promise<FranchiseCenterType> {
+        return this.prisma.franchiseCenter.create({ data: createFranchiseCenterDto });
+  }
+
+  async findAll(): Promise<FranchiseCenterType[]> {
+        return this.prisma.franchiseCenter.findMany();
+  }
+
+  async findOne(id: string): Promise<FranchiseCenterType> {
+        const franchiseCenter = await this.prisma.franchiseCenter.findUnique({ where: { id } });
+    if (!franchiseCenter) {
+      throw new NotFoundException(`FranchiseCenter with ID ${id} not found`);
+    }
+    return franchiseCenter;
+  }
+
+  async update(
+    id: string,
+    updateFranchiseCenterDto: Partial<FranchiseCenterType>,
+  ): Promise<FranchiseCenterType> {
+        const franchiseCenter = await this.prisma.franchiseCenter.update({
+      where: { id },
+      data: updateFranchiseCenterDto,
+    });
+    if (!franchiseCenter) {
+      throw new NotFoundException(`FranchiseCenter with ID ${id} not found`);
+    }
+    return franchiseCenter;
+  }
+
+  async remove(id: string): Promise<void> {
+        const franchiseCenter = await this.prisma.franchiseCenter.delete({ where: { id } });
+    if (!franchiseCenter) {
+      throw new NotFoundException(`FranchiseCenter with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/price/price.controller.ts
+// @file: src/api/price/price.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PriceService } from '@/src/api/price/price.service';
+import { PriceType } from '@/src/types/prisma';
+
+@ApiTags('Price')
+@Controller('price')
+export class PriceController {
+  constructor(private readonly priceService: PriceService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a price' })
+  @ApiResponse({
+    status: 201,
+    description: 'The price has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createPriceDto: Omit<PriceType, 'id'>,
+  ): Promise<PriceType> {
+        return this.priceService.create(createPriceDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all prices' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all prices.',
+  })
+  async findAll(): Promise<PriceType[]> {
+        return this.priceService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a price by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the price.',
+  })
+  @ApiResponse({ status: 404, description: 'Price not found.' })
+  async findOne(@Param('id') id: string): Promise<PriceType> {
+        return this.priceService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a price by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The price has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'Price not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updatePriceDto: Partial<PriceType>,
+  ): Promise<PriceType> {
+        return this.priceService.update(id, updatePriceDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a price by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The price has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'Price not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+        return this.priceService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/price/price.module.ts
+// @file: src/api/price/price.module.ts
+
+import { Module } from '@nestjs/common';
+import { PriceController } from '@/src/api/price/price.controller';
+import { PriceService } from '@/src/api/price/price.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [PriceController],
+  providers: [PriceService],
+})
+export class PriceModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/price/price.service.ts
+// @file: src/api/price/price.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { PriceType } from '@/src/types/prisma';
+
+@Injectable()
+export class PriceService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createPriceDto: Omit<PriceType, 'id'>): Promise<PriceType> {
+        return this.prisma.price.create({ data: createPriceDto });
+  }
+
+  async findAll(): Promise<PriceType[]> {
+        return this.prisma.price.findMany();
+  }
+
+  async findOne(id: string): Promise<PriceType> {
+        const price = await this.prisma.price.findUnique({ where: { id } });
+    if (!price) {
+      throw new NotFoundException(`Price with ID ${id} not found`);
+    }
+    return price;
+  }
+
+  async update(
+    id: string,
+    updatePriceDto: Partial<PriceType>,
+  ): Promise<PriceType> {
+        const price = await this.prisma.price.update({
+      where: { id },
+      data: updatePriceDto,
+    });
+    if (!price) {
+      throw new NotFoundException(`Price with ID ${id} not found`);
+    }
+    return price;
+  }
+
+  async remove(id: string): Promise<void> {
+        const price = await this.prisma.price.delete({ where: { id } });
+    if (!price) {
+      throw new NotFoundException(`Price with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/product/product.controller.ts
+// @file: src/api/product/product.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ProductService } from '@/src/api/product/product.service';
+import { ProductType } from '@/src/types/prisma';
+
+@ApiTags('Product')
+@Controller('product')
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a product' })
+  @ApiResponse({
+    status: 201,
+    description: 'The product has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createProductDto: Omit<ProductType, 'id'>,
+  ): Promise<ProductType> {
+        return this.productService.create(createProductDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all products.',
+  })
+  async findAll(): Promise<ProductType[]> {
+        return this.productService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a product by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the product.',
+  })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
+  async findOne(@Param('id') id: string): Promise<ProductType> {
+        return this.productService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a product by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: Partial<ProductType>,
+  ): Promise<ProductType> {
+        return this.productService.update(id, updateProductDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+        return this.productService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/product/product.module.ts
+// @file: src/api/product/product.module.ts
+
+import { Module } from '@nestjs/common';
+import { ProductController } from '@/src/api/product/product.controller';
+import { ProductService } from '@/src/api/product/product.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [ProductController],
+  providers: [ProductService],
+})
+export class ProductModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/product/product.service.ts
+// @file: src/api/product/product.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { ProductType } from '@/src/types/prisma';
+
+@Injectable()
+export class ProductService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createProductDto: Omit<ProductType, 'id'>): Promise<ProductType> {
+        return this.prisma.product.create({ data: createProductDto });
+  }
+
+  async findAll(): Promise<ProductType[]> {
+        return this.prisma.product.findMany();
+  }
+
+  async findOne(id: string): Promise<ProductType> {
+        const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return product;
+  }
+
+  async update(
+    id: string,
+    updateProductDto: Partial<ProductType>,
+  ): Promise<ProductType> {
+        const product = await this.prisma.product.update({
+      where: { id },
+      data: updateProductDto,
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return product;
+  }
+
+  async remove(id: string): Promise<void> {
+        const product = await this.prisma.product.delete({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/stock/stock.controller.ts
+// @file: src/api/stock/stock.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { StockService } from '@/src/api/stock/stock.service';
+import { StockType } from '@/src/types/prisma';
+
+@ApiTags('Stock')
+@Controller('stock')
+export class StockController {
+  constructor(private readonly stockService: StockService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a stock' })
+  @ApiResponse({
+    status: 201,
+    description: 'The stock has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createStockDto: Omit<StockType, 'id'>,
+  ): Promise<StockType> {
+        return this.stockService.create(createStockDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all stocks' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all stocks.',
+  })
+  async findAll(): Promise<StockType[]> {
+        return this.stockService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a stock by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the stock.',
+  })
+  @ApiResponse({ status: 404, description: 'Stock not found.' })
+  async findOne(@Param('id') id: string): Promise<StockType> {
+        return this.stockService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a stock by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The stock has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'Stock not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateStockDto: Partial<StockType>,
+  ): Promise<StockType> {
+        return this.stockService.update(id, updateStockDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a stock by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The stock has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'Stock not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+        return this.stockService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/stock/stock.module.ts
+// @file: src/api/stock/stock.module.ts
+
+import { Module } from '@nestjs/common';
+import { StockController } from '@/src/api/stock/stock.controller';
+import { StockService } from '@/src/api/stock/stock.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [StockController],
+  providers: [StockService],
+})
+export class StockModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/stock/stock.service.ts
+// @file: src/api/stock/stock.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { StockType } from '@/src/types/prisma';
+
+@Injectable()
+export class StockService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createStockDto: Omit<StockType, 'id'>): Promise<StockType> {
+        return this.prisma.stock.create({ data: createStockDto });
+  }
+
+  async findAll(): Promise<StockType[]> {
+        return this.prisma.stock.findMany();
+  }
+
+  async findOne(id: string): Promise<StockType> {
+        const stock = await this.prisma.stock.findUnique({ where: { id } });
+    if (!stock) {
+      throw new NotFoundException(`Stock with ID ${id} not found`);
+    }
+    return stock;
+  }
+
+  async update(
+    id: string,
+    updateStockDto: Partial<StockType>,
+  ): Promise<StockType> {
+        const stock = await this.prisma.stock.update({
+      where: { id },
+      data: updateStockDto,
+    });
+    if (!stock) {
+      throw new NotFoundException(`Stock with ID ${id} not found`);
+    }
+    return stock;
+  }
+
+  async remove(id: string): Promise<void> {
+        const stock = await this.prisma.stock.delete({ where: { id } });
+    if (!stock) {
+      throw new NotFoundException(`Stock with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/variation/variation.controller.ts
+// @file: src/api/variation/variation.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { VariationService } from '@/src/api/variation/variation.service';
+import { VariationType } from '@/src/types/prisma';
+
+@ApiTags('Variation')
+@Controller('variation')
+export class VariationController {
+  constructor(private readonly variationService: VariationService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a variation' })
+  @ApiResponse({
+    status: 201,
+    description: 'The variation has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createVariationDto: Omit<VariationType, 'id'>,
+  ): Promise<VariationType> {
+        return this.variationService.create(createVariationDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all variations' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all variations.',
+  })
+  async findAll(): Promise<VariationType[]> {
+        return this.variationService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a variation by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the variation.',
+  })
+  @ApiResponse({ status: 404, description: 'Variation not found.' })
+  async findOne(@Param('id') id: string): Promise<VariationType> {
+        return this.variationService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a variation by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The variation has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'Variation not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateVariationDto: Partial<VariationType>,
+  ): Promise<VariationType> {
+        return this.variationService.update(id, updateVariationDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a variation by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The variation has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'Variation not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+        return this.variationService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/variation/variation.module.ts
+// @file: src/api/variation/variation.module.ts
+
+import { Module } from '@nestjs/common';
+import { VariationController } from '@/src/api/variation/variation.controller';
+import { VariationService } from '@/src/api/variation/variation.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [VariationController],
+  providers: [VariationService],
+})
+export class VariationModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/api/variation/variation.service.ts
+// @file: src/api/variation/variation.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { VariationType } from '@/src/types/prisma';
+
+@Injectable()
+export class VariationService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createVariationDto: Omit<VariationType, 'id'>): Promise<VariationType> {
+        return this.prisma.variation.create({ data: createVariationDto });
+  }
+
+  async findAll(): Promise<VariationType[]> {
+        return this.prisma.variation.findMany();
+  }
+
+  async findOne(id: string): Promise<VariationType> {
+        const variation = await this.prisma.variation.findUnique({ where: { id } });
+    if (!variation) {
+      throw new NotFoundException(`Variation with ID ${id} not found`);
+    }
+    return variation;
+  }
+
+  async update(
+    id: string,
+    updateVariationDto: Partial<VariationType>,
+  ): Promise<VariationType> {
+        const variation = await this.prisma.variation.update({
+      where: { id },
+      data: updateVariationDto,
+    });
+    if (!variation) {
+      throw new NotFoundException(`Variation with ID ${id} not found`);
+    }
+    return variation;
+  }
+
+  async remove(id: string): Promise<void> {
+        const variation = await this.prisma.variation.delete({ where: { id } });
+    if (!variation) {
+      throw new NotFoundException(`Variation with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/app.controller.spec.ts
+// @file: src/app.controller.spec.ts
+
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+describe('AppController', () => {
+  let appController: AppController;
+
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+
+    appController = app.get<AppController>(AppController);
+  });
+
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+});
+
+@file: /home/dev/projects/nestjs-prisma/src/app.controller.ts
+// @file: src/app.controller.ts
+
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/app.module.ts
+// @file: src/app.module.ts
+
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+import { CasbinModule } from '@/src/core/casbin/casbin.module';
+import { PermissionsController } from '@/src/core/permissions/permissions.controller';
+
+import { FilesModule } from '@/src/core/files/files.module';
+import { UserModule } from '@/src/core/user/user.module';
+import { AuthModule } from '@/src/core/auth/auth.module';
+import { DynamicModuleLoader } from '@/src/core/dynamic-module-loader';
+
+@Module({
+  imports: [
+    CasbinModule,
+    AuthModule,
+    UserModule,
+    FilesModule,
+    DynamicModuleLoader.forRoot(),
+  ],
+  controllers: [AppController, PermissionsController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/app.service.ts
+// @file: src/app.service.ts
+
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/common/middleware/x-powered-by.middleware.ts
+// @file: src/common/middleware/x-powered-by.middleware.ts
+
+import { env } from '@/config/env';
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+
+@Injectable()
+export class XPoweredByMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    res.removeHeader('X-Powered-By');
+    res.setHeader('X-Powered-By', env('X_POWERED', atob('RGFuU1AuREVW')));
+    next();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/config/model.conf
+[request_definition]
+r = sub, obj, act
+
+[policy_definition]
+p = sub, obj, act
+
+[role_definition]
+g = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = r.sub == p.sub && r.obj == p.obj && r.act == p.act
+
+@file: /home/dev/projects/nestjs-prisma/src/config/policy.csv
+p, admin, /user, get
+p, admin, /user, post
+g, user, admin
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/auth.controller.ts
+// @file: src/auth/auth.controller.ts
+
+import { Controller, Post, Body, Param } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+
+@Controller('auth')
+@ApiTags('Auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  async register(@Body() registerDto: RegisterDto) {
+    const result = await this.authService.register(
+      registerDto.email,
+      registerDto.password,
+    );
+    return {
+      message: 'User created successfully',
+      ...result,
+    };
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Log in to an existing account' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
+  async login(@Body() loginDto: LoginDto) {
+    const result = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+    );
+    return {
+      message: 'Login successful',
+      ...result,
+    };
+  }
+
+  @Post('reset/password/request')
+  @ApiOperation({ summary: 'Request a password reset' })
+  @ApiResponse({ status: 200, description: 'Password reset request sent.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  async requestPasswordReset(
+    @Body() requestPasswordResetDto: RequestPasswordResetDto,
+  ) {
+    await this.authService.requestPasswordReset(requestPasswordResetDto.email);
+    return { message: 'Password reset request sent' };
+  }
+
+  @Post('reset/password/:token')
+  @ApiOperation({ summary: 'Reset the user password' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully.' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired reset token.' })
+  async resetPassword(
+    @Param('token') token: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    await this.authService.resetPassword(token, resetPasswordDto.newPassword);
+    return { message: 'Password reset successfully' };
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/auth.module.ts
+// src/auth/auth.module.ts
+import { Module } from '@nestjs/common';
+import { AuthService } from '@/src/core/auth/auth.service';
+import { AuthController } from '@/src/core/auth/auth.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '@/src/core/auth/jwt.strategy';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+import { MailModule } from '@/src/core/mail/mail.module';
+import { RolesGuard } from '@/src/core/auth/roles.guard';
+import { RolesService } from './roles.service';
+import { RolesController } from '@/src/core/auth/roles.controller';
+import { UserService } from '@/src/core/user/user.service';
+import { env } from '@/config/env';
+
+@Module({
+  imports: [
+    PassportModule,
+    JwtModule.register({
+      secret: env(
+        'JWT_SECRET',
+        'eedfd7ef5303e85aa73a7c74de99bc0a8116fc339f909195d0eeb98b10cda1d9',
+      ),
+      signOptions: { expiresIn: env('JWT_EXPIRE', '1h') },
+    }),
+    PrismaModule,
+    MailModule,
+  ],
+  providers: [AuthService, JwtStrategy, RolesGuard, RolesService, UserService],
+  controllers: [AuthController, RolesController],
+  exports: [AuthService, RolesGuard, JwtModule], // Certifique-se de exportar o JwtModule aqui
+})
+export class AuthModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/auth.service.ts
+// @file: src/auth/auth.service.ts
+
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { MailService } from '@/src/core/mail/mail.service';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private mailService: MailService,
+  ) {}
+
+  async register(email: string, password: string) {
+    // Criptografa a senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Cria o usuário no banco de dados
+    const user = await this.prisma.user.create({
+      data: { email, password: hashedPassword, role: 'user' },
+    });
+
+    // Gera o token JWT
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+
+    // Retorna o usuário e o token JWT
+    return { user, access_token: accessToken };
+  }
+
+  async login(email: string, password: string) {
+    // Busca o usuário no banco de dados
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    // Verifica se o usuário existe e a senha está correta
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Gera o token JWT
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+
+    // Retorna o usuário e o token JWT
+    return { user, access_token: accessToken };
+  }
+
+  async requestPasswordReset(email: string) {
+    // Busca o usuário no banco de dados
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    // Verifica se o usuário existe
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Gera o token de redefinição
+    const resetToken = randomBytes(32).toString('hex');
+
+    // Atualiza o usuário com o token de redefinição e expiração
+    await this.prisma.user.update({
+      where: { email },
+      data: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) }, // Token expira em 1 hora
+    });
+
+    // Envia o e-mail de redefinição de senha
+    await this.mailService.sendPasswordResetEmail(email, resetToken);
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    // Busca o usuário com o token de redefinição válido
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: { gte: new Date() },
+      },
+    });
+
+    // Verifica se o token é válido
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    // Criptografa a nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualiza o usuário com a nova senha e limpa o token de redefinição
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/decorators/roles.decorator.ts
+// @file: src/core/auth/decorators/roles.decorator.ts
+
+import { SetMetadata } from '@nestjs/common';
+import { Roles } from '@/src/core/auth/roles.enum';
+
+export const ROLES_KEY = 'roles';
+export const RolesDecorator = (...roles: Roles[]) =>
+  SetMetadata(ROLES_KEY, roles);
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/create-permission.dto.ts
+// @file: src/roles-permissions/dto/create-permission.dto.ts
+
+import { IsString } from 'class-validator';
+
+export class CreatePermissionDto {
+  @IsString()
+  readonly name: string;
+
+  @IsString()
+  readonly description?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/create-role.dto.ts
+// @file: src/core/auth/dto/create-role.dto.ts
+
+import { IsString } from 'class-validator';
+
+export class CreateRoleDto {
+  @IsString()
+  readonly name: string;
+
+  @IsString()
+  readonly description?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/login.dto.ts
+// @file: src/auth/dto/login.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+export class LoginDto {
+  @ApiProperty({ description: 'The email address of the user' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ description: 'The password of the user' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/register.dto.ts
+// @file: src/auth/dto/register.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+export class RegisterDto {
+  @ApiProperty({ description: 'The email address of the user' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ description: 'The password of the user' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/request-password-reset.dto.ts
+// @file: src/auth/dto/request-password-reset.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty } from 'class-validator';
+
+export class RequestPasswordResetDto {
+  @ApiProperty({
+    description: 'The email address of the user requesting a password reset',
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/dto/reset-password.dto.ts
+// @file: src/auth/dto/reset-password.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class ResetPasswordDto {
+  @ApiProperty({ description: 'The new password for the user' })
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/entities/permission.entity.ts
+// @file: src/core/auth/entities/permission.entity.ts
+
+export class Permission {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/entities/role.entity.ts
+// @file: src/core/auth/entities/role.entity.ts
+
+export class Role {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/jwt-auth.guard.ts
+// @file: src/core/auth/jwt-auth.guard.ts
+
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Observable } from 'rxjs';
+
+@Injectable()
+export class JwtAuthGuard implements CanActivate {
+  constructor(private readonly jwtService: JwtService) {}
+
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return false;
+    }
+
+    try {
+      const decoded = this.jwtService.verify(token);
+      request.user = decoded;
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/jwt.payload.ts
+// @file: src/auth/jwt.payload.ts
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/jwt.strategy.ts
+// @file: src/auth/jwt.strategy.ts
+
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { env } from '@/config/env';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: env(
+        'JWT_SECRET',
+        'eedfd7ef5303e85aa73a7c74de99bc0a8116fc339f909195d0eeb98b10cda1d9',
+      ),
+    });
+  }
+
+  async validate(payload: any) {
+    return { userId: payload.sub, username: payload.username };
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/permissions.controller.ts
+// @file: src/core/auth/permissions.controller.ts
+
+import { Controller, Post, Body, Delete, Param, Get } from '@nestjs/common';
+import { PermissionsService } from '@/src/core/auth/permissions.service';
+import { CreatePermissionDto } from '@/src/core/auth/dto/create-permission.dto';
+
+@Controller('permissions')
+export class PermissionsController {
+  constructor(private readonly permissionsService: PermissionsService) {}
+
+  @Post()
+  async createPermission(@Body() createPermissionDto: CreatePermissionDto) {
+    return this.permissionsService.createPermission(createPermissionDto);
+  }
+
+  @Delete(':id')
+  async removePermission(@Param('id') id: number) {
+    return this.permissionsService.removePermission(id);
+  }
+
+  @Get()
+  async findAll() {
+    return this.permissionsService.findAll();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/permissions.service.ts
+// @file: src/core/auth/permissions.service.ts
+
+import { Injectable } from '@nestjs/common';
+import { CreatePermissionDto } from './dto/create-permission.dto';
+import { Permission } from './entities/permission.entity';
+
+@Injectable()
+export class PermissionsService {
+  private permissions: Permission[] = []; // Simulando um banco de dados
+
+  async createPermission(
+    createPermissionDto: CreatePermissionDto,
+  ): Promise<Permission> {
+    const newPermission: Permission = {
+      id: this.permissions.length + 1, // Simulando ID auto-incremental
+      ...createPermissionDto,
+    };
+    this.permissions.push(newPermission);
+    return newPermission;
+  }
+
+  async removePermission(id: number): Promise<void> {
+    this.permissions = this.permissions.filter(
+      (permission) => permission.id !== id,
+    );
+  }
+
+  async findAll(): Promise<Permission[]> {
+    return this.permissions;
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/roles.controller.ts
+// @file: src/core/auth/roles.controller.ts
+
+import { Controller, Post, Body, Delete, Param, Get } from '@nestjs/common';
+import { RolesService } from '@/src/core/auth/roles.service';
+import { CreateRoleDto } from '@/src/core/auth/dto/create-role.dto';
+
+@Controller('roles')
+export class RolesController {
+  constructor(private readonly rolesService: RolesService) {}
+
+  @Post()
+  async createRole(@Body() createRoleDto: CreateRoleDto) {
+    return this.rolesService.createRole(createRoleDto);
+  }
+
+  @Delete(':id')
+  async removeRole(@Param('id') id: number) {
+    return this.rolesService.removeRole(id);
+  }
+
+  @Get()
+  async findAll() {
+    return this.rolesService.findAll();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/roles.enum.ts
+// @file: src/core/auth/roles.enum.ts
+
+export enum Roles {
+  ADMIN = 'admin',
+  USER = 'user',
+  GUEST = 'guest',
+  // Adicione outros roles conforme necessário
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/roles.guard.ts
+// @file: src/core/auth/roles.guard.ts
+
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from './decorators/roles.decorator';
+import { Roles } from '@/src/core/auth/roles.enum';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const roles = this.reflector.get<Roles[]>(ROLES_KEY, context.getHandler());
+    if (!roles) {
+      return true;
+    }
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+    return roles.some((role) => user.roles?.includes(role));
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/auth/roles.service.ts
+// @file: src/core/auth/roles.service.ts
+
+import { Injectable } from '@nestjs/common';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { Role } from './entities/role.entity';
+
+@Injectable()
+export class RolesService {
+  private roles: Role[] = []; // Simulando um banco de dados
+
+  async createRole(createRoleDto: CreateRoleDto): Promise<Role> {
+    const newRole: Role = {
+      id: this.roles.length + 1, // Simulando ID auto-incremental
+      ...createRoleDto,
+    };
+    this.roles.push(newRole);
+    return newRole;
+  }
+
+  async removeRole(id: number): Promise<void> {
+    this.roles = this.roles.filter((role) => role.id !== id);
+  }
+
+  async findAll(): Promise<Role[]> {
+    return this.roles;
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/casbin/casbin.guard.ts
+// @file: src/core/casbin/casbin.guard.ts
+
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CasbinService } from '@/src/core/casbin/casbin.service';
+
+@Injectable()
+export class CasbinGuard implements CanActivate {
+  constructor(private casbinService: CasbinService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const userRole = request.user?.role || 'guest'; // Assumindo que a role do usuário está no objeto request.user
+    const resource = request.route.path;
+    const action = request.method.toLowerCase();
+
+    return this.casbinService.can(userRole, resource, action);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/casbin/casbin.module.ts
+// @file: src/core/casbin/casbin.module.ts
+
+import { Module } from '@nestjs/common';
+import { CasbinService } from '@/src/core/casbin/casbin.service';
+import { CasbinGuard } from '@/src/core/casbin/casbin.guard';
+
+@Module({
+  providers: [CasbinService, CasbinGuard],
+  exports: [CasbinService, CasbinGuard],
+})
+export class CasbinModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/casbin/casbin.service.ts
+// @file: src/core/casbin/casbin.service.ts
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import * as casbin from 'casbin';
+
+@Injectable()
+export class CasbinService implements OnModuleInit {
+  private enforcer: casbin.Enforcer;
+
+  async onModuleInit() {
+    // Caminho atualizado para os arquivos de configuração
+    this.enforcer = await casbin.newEnforcer(
+      './src/config/model.conf',
+      './src/config/policy.csv',
+    );
+  }
+
+  async can(
+    userRole: string,
+    resource: string,
+    action: string,
+  ): Promise<boolean> {
+    return await this.enforcer.enforce(userRole, resource, action);
+  }
+
+  async addPolicy(sub: string, obj: string, act: string) {
+    await this.enforcer.addPolicy(sub, obj, act);
+  }
+
+  async getAllPolicies() {
+    return this.enforcer.getPolicy();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/defaults/model.controller.ts
+// @file: src/core/defaults/model.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ModelService } from '@/src/core/defaults/model.service';
+//@ts-ignore
+import { ModelType } from '@/src/types/prisma';
+
+@ApiTags('Model')
+@Controller('model')
+export class ModelController {
+  constructor(private readonly modelService: ModelService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a model' })
+  @ApiResponse({
+    status: 201,
+    description: 'The model has been successfully created.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  async create(
+    @Body() createModelDto: Omit<ModelType, 'id'>,
+  ): Promise<ModelType> {
+    //@ts-ignore
+    return this.modelService.create(createModelDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all models' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved all models.',
+  })
+  async findAll(): Promise<ModelType[]> {
+    //@ts-ignore
+    return this.modelService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a model by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved the model.',
+  })
+  @ApiResponse({ status: 404, description: 'Model not found.' })
+  async findOne(@Param('id') id: string): Promise<ModelType> {
+    //@ts-ignore
+    return this.modelService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a model by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The model has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'Model not found.' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateModelDto: Partial<ModelType>,
+  ): Promise<ModelType> {
+    //@ts-ignore
+    return this.modelService.update(id, updateModelDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a model by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The model has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'Model not found.' })
+  async remove(@Param('id') id: string): Promise<void> {
+    //@ts-ignore
+    return this.modelService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/defaults/model.module.ts
+// @file: src/core/defaults/model.module.ts
+
+import { Module } from '@nestjs/common';
+import { ModelController } from '@/src/core/defaults/model.controller';
+import { ModelService } from '@/src/core/defaults/model.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [ModelController],
+  providers: [ModelService],
+})
+export class ModelModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/defaults/model.service.ts
+// @file: src/core/defaults/model.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+//@ts-ignore
+import { ModelType } from '@/src/types/prisma';
+
+@Injectable()
+export class ModelService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createModelDto: Omit<ModelType, 'id'>): Promise<ModelType> {
+    //@ts-ignore
+    return this.prisma.model.create({ data: createModelDto });
+  }
+
+  async findAll(): Promise<ModelType[]> {
+    //@ts-ignore
+    return this.prisma.model.findMany();
+  }
+
+  async findOne(id: string): Promise<ModelType> {
+    //@ts-ignore
+    const model = await this.prisma.model.findUnique({ where: { id } });
+    if (!model) {
+      throw new NotFoundException(`Model with ID ${id} not found`);
+    }
+    return model;
+  }
+
+  async update(
+    id: string,
+    updateModelDto: Partial<ModelType>,
+  ): Promise<ModelType> {
+    //@ts-ignore
+    const model = await this.prisma.model.update({
+      where: { id },
+      data: updateModelDto,
+    });
+    if (!model) {
+      throw new NotFoundException(`Model with ID ${id} not found`);
+    }
+    return model;
+  }
+
+  async remove(id: string): Promise<void> {
+    //@ts-ignore
+    const model = await this.prisma.model.delete({ where: { id } });
+    if (!model) {
+      throw new NotFoundException(`Model with ID ${id} not found`);
+    }
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/dynamic-module-loader.ts
+// @file: src/core/dynamic-module-loader.ts
+
+import { DynamicModule, Module, Type } from '@nestjs/common';
+import { readdirSync, statSync } from 'fs';
+import { join } from 'path';
+
+/**
+ * A dynamic module loader for NestJS that loads modules from a specified directory.
+ */
+@Module({})
+export class DynamicModuleLoader {
+  /**
+   * Creates a dynamic module that imports all modules found in the 'api' directory.
+   *
+   * @returns {DynamicModule} The dynamic module containing the loaded modules.
+   */
+  static forRoot(): DynamicModule {
+    const modules = this.loadModules();
+    return {
+      module: DynamicModuleLoader,
+      imports: modules,
+    };
+  }
+
+  /**
+   * Loads all modules from the 'api' directory.
+   *
+   * @returns {Type<any>[]} An array of module classes loaded from the directory.
+   */
+  private static loadModules(): Type<any>[] {
+    const modulesDir = join(__dirname, '../api');
+    // console.log('modulesDir::', modulesDir); // Prints the directory of the modules
+
+    // Iterates over each directory inside modulesDir
+    const moduleFiles = readdirSync(modulesDir).flatMap((dir) => {
+      const fullDirPath = join(modulesDir, dir);
+      // console.log('Checking directory::', fullDirPath); // Checks if it is a directory
+
+      // Verifies if it is a directory before attempting to read files within
+      if (statSync(fullDirPath).isDirectory()) {
+        // Reads files inside the specific directory
+        return readdirSync(fullDirPath)
+          .filter((file) => {
+            // console.log('file::', file); // Prints the name of each found file
+            return file.endsWith('.module.js'); // Checks for .module.js files
+          })
+          .map((file) => {
+            const modulePath = join(fullDirPath, file);
+            // console.log(`Loading module: ${modulePath}`); // Prints the full path of the module
+
+            // Imports the module and tries to get the module class correctly
+            const module = require(modulePath);
+            const moduleClass = module.default || Object.values(module)[0]; // Corrects loading to get the class properly
+
+            // Checks if the imported module is a function (class) and not an object
+            if (typeof moduleClass !== 'function') {
+              throw new Error(
+                `Failed to load module: ${modulePath} is not a valid NestJS module.`,
+              );
+            }
+
+            return moduleClass; // Returns the module class
+          })
+          .filter(Boolean); // Removes null values
+      }
+      return [];
+    });
+
+    // console.log('moduleFiles::', moduleFiles); // Prints the loaded modules
+    return moduleFiles;
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/files/dto/create-file.dto.ts
+// @file: src/files/dto/create-file.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+
+export class CreateFileDto {
+  @ApiProperty({ example: 'file.txt', description: 'The name of the file' })
+  readonly name: string;
+
+  @ApiProperty({
+    example: 'text/plain',
+    description: 'The MIME type of the file',
+  })
+  readonly mimeType: string;
+
+  @ApiProperty({
+    example: 'http://example.com/file.txt',
+    description: 'The URL of the file',
+  })
+  readonly url: string;
+}
+
+export class UpdateFileDto {
+  @ApiProperty({ example: 'file.txt', description: 'The name of the file' })
+  readonly name?: string;
+
+  @ApiProperty({
+    example: 'text/plain',
+    description: 'The MIME type of the file',
+  })
+  readonly mimeType?: string;
+
+  @ApiProperty({
+    example: 'http://example.com/file.txt',
+    description: 'The URL of the file',
+  })
+  readonly url?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/files/dto/file-upload.dto.ts
+// @file: src/files/dto/file-upload.dto.ts
+
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
+
+export class FileUploadDto {
+  @ApiProperty({
+    description: 'The file to upload',
+    type: 'string',
+    format: 'binary',
+  })
+  @IsNotEmpty()
+  file: any;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/files/files.controller.ts
+// @file: src/files/files.controller.ts
+
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Put,
+  Delete,
+  Query,
+  UseGuards,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
+import { FilesService } from './files.service';
+import { CreateFileDto, UpdateFileDto } from './dto/create-file.dto';
+import { JwtAuthGuard } from '@/src/core/auth/jwt-auth.guard';
+import { CasbinGuard } from '@/src/core/casbin/casbin.guard';
+
+import { FileUploadDto } from './dto/file-upload.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
+
+@Controller('files')
+@ApiTags('Files')
+@UseGuards(JwtAuthGuard, CasbinGuard)
+@ApiBearerAuth()
+export class FilesController {
+  constructor(private readonly filesService: FilesService) {}
+
+  @Post('upload')
+  @ApiOperation({ summary: 'Upload a file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload a file',
+    type: FileUploadDto, // Define o DTO para a documentação
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiResponse({
+    status: 201,
+    description: 'The file has been successfully uploaded.',
+  })
+  async uploadFile(@UploadedFile() file: Multer.File) {
+    return this.filesService.uploadFile(file);
+  }
+
+  // @Post()
+  // @ApiOperation({ summary: 'Create a file' })
+  // @ApiResponse({ status: 201, description: 'The file has been successfully created.' })
+  // create(@Body() createFileDto: CreateFileDto) {
+  //   return this.filesService.create(createFileDto);
+  // }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get a list of files with pagination, filters, and sorting',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of files retrieved successfully.',
+  })
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sortBy') sortBy = 'createdAt',
+    @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'asc',
+    @Query('nameFilter') nameFilter = '',
+    @Query('dateRangeStart') dateRangeStart?: Date,
+    @Query('dateRangeEnd') dateRangeEnd?: Date,
+  ) {
+    return this.filesService.findAll({
+      page: +page,
+      limit: +limit,
+      sortBy,
+      sortOrder,
+      nameFilter,
+      dateRangeStart: dateRangeStart ? new Date(dateRangeStart) : undefined,
+      dateRangeEnd: dateRangeEnd ? new Date(dateRangeEnd) : undefined,
+    });
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a file by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The file has been successfully retrieved.',
+  })
+  @ApiResponse({ status: 404, description: 'File not found' })
+  findOne(@Param('id') id: string) {
+    return this.filesService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a file by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The file has been successfully updated.',
+  })
+  @ApiResponse({ status: 404, description: 'File not found' })
+  update(@Param('id') id: string, @Body() updateFileDto: UpdateFileDto) {
+    return this.filesService.update(id, updateFileDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a file by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The file has been successfully deleted.',
+  })
+  @ApiResponse({ status: 404, description: 'File not found' })
+  remove(@Param('id') id: string) {
+    return this.filesService.delete(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/files/files.module.ts
+// @file: src/files/files.module.ts
+
+import { Module } from '@nestjs/common';
+import { FilesService } from './files.service';
+import { FilesController } from './files.controller';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+import { CasbinModule } from '@/src/core/casbin/casbin.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { join } from 'path';
+import { env } from '@/config/env';
+
+@Module({
+  imports: [
+    CasbinModule,
+    PrismaModule,
+    MulterModule.register({
+      dest: join(__dirname, '..', env('DIR_UPLOADS', 'uploads')),
+    }),
+  ],
+  providers: [FilesService],
+  controllers: [FilesController],
+})
+export class FilesModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/files/files.service.ts
+// @file: src/files/files.service.ts
+
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { Multer } from 'multer'; // Importa o tipo Multer do pacote multer
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class FilesService {
+  constructor(private prisma: PrismaService) {}
+
+  async uploadFile(file: Multer.File) {
+    // Gera um nome único para o arquivo
+    const uniqueFilename = `${uuidv4()}-${file.originalname}`;
+
+    // Define o caminho onde o arquivo será salvo
+    const filePath = join(__dirname, '../../uploads', uniqueFilename);
+
+    // Salva o arquivo no sistema de arquivos
+    await writeFile(filePath, file.buffer);
+
+    // URL do arquivo (adaptar conforme necessário para o seu serviço de armazenamento)
+    const fileUrl = `http://localhost:3000/uploads/${uniqueFilename}`;
+
+    // Cria um registro no banco de dados com a URL do arquivo
+    return this.prisma.file.create({
+      data: {
+        name: file.originalname,
+        url: fileUrl,
+      },
+    });
+  }
+
+  create(data: { name: string; url: string }) {
+    return this.prisma.file.create({ data });
+  }
+
+  findAll({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    nameFilter,
+    dateRangeStart,
+    dateRangeEnd,
+  }: {
+    page: number;
+    limit: number;
+    sortBy: string;
+    sortOrder: 'asc' | 'desc';
+    nameFilter: string;
+    dateRangeStart?: Date;
+    dateRangeEnd?: Date;
+  }) {
+    return this.prisma.file.findMany({
+      where: {
+        name: {
+          contains: nameFilter,
+        },
+        createdAt: {
+          gte: dateRangeStart,
+          lte: dateRangeEnd,
+        },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+  }
+
+  findOne(id: string) {
+    return this.prisma.file.findUnique({ where: { id } });
+  }
+
+  update(id: string, data: { name?: string; url?: string }) {
+    return this.prisma.file.update({ where: { id }, data });
+  }
+
+  delete(id: string) {
+    return this.prisma.file.delete({ where: { id } });
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/generate.ts
+// @file: src/core/generate.ts
+
+import { PrismaClient, Prisma } from '@prisma/client';
+import fs, { writeFileSync } from 'fs';
+import path, { join } from 'path';
+
+// Path to the Prisma schema file
+const prismaSchemaPath = path.resolve('prisma', 'schema.prisma');
+// Path to the TypeScript file for Prisma model types
+const modelsFilePath = path.resolve('src', 'types', 'prisma.ts');
+// Path to the directory containing template files
+const templatesPath = path.resolve('src', 'core', 'defaults');
+
+// Initialize Prisma Client
+const prisma = new PrismaClient();
+// List of tables to ignore when generating files
+const ignoreTables = ['File', 'Auth', 'User'];
+
+/**
+ * Generates CRUD files for each model defined in the Prisma schema.
+ * It creates controllers, services, and modules for each model.
+ */
+async function generateCRUD() {
+  // Fetch the list of table names from the database
+  const models = await prisma.$queryRaw<Array<{ tablename: string }>>(
+    Prisma.sql`SELECT tablename FROM pg_tables WHERE schemaname='public';`,
+  );
+
+  // Generate TypeScript interfaces for each model
+  const modelsList = models
+    .map((a) => a?.tablename)
+    .filter(Boolean)
+    .filter((tableName) => !tableName.startsWith('_')) as string[];
+  generateModelTypes(modelsList);
+
+  // Load template files for controllers, services, and modules
+  const controllerTemplate = fs.readFileSync(
+    path.join(templatesPath, 'model.controller.ts'),
+    'utf-8',
+  );
+  const serviceTemplate = fs.readFileSync(
+    path.join(templatesPath, 'model.service.ts'),
+    'utf-8',
+  );
+  const moduleTemplate = fs.readFileSync(
+    path.join(templatesPath, 'model.module.ts'),
+    'utf-8',
+  );
+
+  // Generate files for each model
+  models.forEach(({ tablename }) => {
+    if (!ignoreTables?.includes(tablename) && !tablename.startsWith('_')) {
+      const ModelName = tablename.charAt(0).toUpperCase() + tablename.slice(1); // Example output: 'User'
+      const modelName = tablename.charAt(0).toLowerCase() + tablename.slice(1); // Example output: 'user'
+
+      const apiDir = path.join(__dirname, '../api', modelName);
+
+      // Replacements for the templates
+      const replacements = {
+        Model: ModelName,
+        model: modelName,
+        'src/core/defaults': `src/api/${modelName}`,
+        '//@ts-ignore\n': '',
+      };
+
+      // Generate the content for each file
+      const controllerContent = replaceMultiple(
+        controllerTemplate,
+        replacements,
+      );
+      const serviceContent = replaceMultiple(serviceTemplate, replacements);
+      const moduleContent = replaceMultiple(moduleTemplate, replacements);
+
+      // Define file paths for the generated files
+      const modelController = path.join(apiDir, `${modelName}.controller.ts`);
+      const modelModule = path.join(apiDir, `${modelName}.module.ts`);
+      const modelService = path.join(apiDir, `${modelName}.service.ts`);
+
+      // Create directories if they do not exist
+      if (!fs.existsSync(apiDir)) {
+        fs.mkdirSync(apiDir, { recursive: true });
+      }
+
+      // Write the generated content to files
+      writeFileSync(modelController, controllerContent);
+      writeFileSync(modelService, serviceContent);
+      writeFileSync(modelModule, moduleContent);
+    }
+  });
+}
+
+/**
+ * Replaces multiple placeholders in a text with corresponding values.
+ *
+ * @param text - The text with placeholders.
+ * @param replacements - An object with placeholder values.
+ * @returns The text with placeholders replaced.
+ */
+function replaceMultiple(
+  text: string,
+  replacements: { [key: string]: string },
+): string {
+  return Object.entries(replacements).reduce((acc, [find, replace]) => {
+    const regex = new RegExp(find, 'g'); // Create a global regular expression for the pattern
+    return acc.replace(regex, replace);
+  }, text);
+}
+
+/**
+ * Generates TypeScript types based on the Prisma schema models.
+ *
+ * @param models - The list of model names.
+ */
+function generateModelTypes(models: string[]) {
+  let imports = '';
+  imports += `// @file: src/types/prisma.ts\n`;
+  imports += `// Automatically generated, do not edit manually please!\n\n`;
+  imports += `import { Prisma } from '@prisma/client';\n\n`;
+
+  const types = models
+    .map((model) => `export type ${model}Type = Prisma.${model}GetPayload<{}>;`)
+    .join('\n');
+
+  const content = `${imports}${types}\n`;
+
+  fs.writeFileSync(modelsFilePath, content, 'utf-8');
+  console.log(`Updated ${modelsFilePath}`);
+}
+
+/**
+ * Generates Data Transfer Objects (DTOs) based on the Prisma schema.
+ *
+ * @param schema - The Prisma schema content.
+ */
+function generateDTOsFromSchema(schema: string) {
+  const modelPattern = /model\s+(\w+)\s+{([^}]*)}/g;
+  let match;
+
+  while ((match = modelPattern.exec(schema)) !== null) {
+    const modelName = match[1];
+    const fields = match[2];
+
+    const dtoContent = generateDTOContent(modelName, fields);
+    const dtoPath = path.join(
+      __dirname,
+      '../api',
+      modelName.toLowerCase(),
+      `${modelName}.dto.ts`,
+    );
+
+    if (!fs.existsSync(path.dirname(dtoPath))) {
+      fs.mkdirSync(path.dirname(dtoPath), { recursive: true });
+    }
+
+    writeFileSync(dtoPath, dtoContent);
+  }
+}
+
+/**
+ * Generates the content for a DTO based on the model name and fields.
+ *
+ * @param modelName - The name of the model.
+ * @param fields - The fields of the model.
+ * @returns The DTO content as a string.
+ */
+function generateDTOContent(modelName: string, fields: string): string {
+  const fieldLines = fields
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('@'))
+    .map((line) => {
+      const [field, type] = line.split(' ');
+      return `  ${field}: ${type};`;
+    })
+    .join('\n');
+
+  return (
+    `// @file: src/api/${modelName.toLowerCase()}/${modelName}.dto.ts\n` +
+    `// Automatically generated, do not edit manually please!\n\n` +
+    `export interface ${modelName}DTO {\n` +
+    `${fieldLines}\n` +
+    `}\n`
+  );
+}
+
+// Execute the CRUD generation process and handle any errors
+generateCRUD()
+  .then(() => {
+    console.log('Documentation & Types generated');
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
+
+@file: /home/dev/projects/nestjs-prisma/src/core/mail/mail.module.ts
+// @file: src/mail/mail.module.ts
+
+import { Module } from '@nestjs/common';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { MailService } from '@/src/core/mail/mail.service';
+import * as dotenv from 'dotenv';
+import { env } from '@/config/env';
+
+dotenv.config(); // Carrega as variáveis de ambiente
+
+@Module({
+  imports: [
+    MailerModule.forRoot({
+      transport: {
+        host: env('SMTP_HOST'),
+        port: parseInt(env('SMTP_PORT'), 10),
+        secure: env('SMTP_SECURE') === 'true',
+        auth: {
+          user: env('SMTP_USER'),
+          pass: env('SMTP_PASS'),
+        },
+      },
+      defaults: {
+        from: env('EMAIL_FROM'),
+      },
+    }),
+  ],
+  providers: [MailService],
+  exports: [MailService],
+})
+export class MailModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/mail/mail.service.ts
+// @file: src/mail/mail.service.ts
+
+import { Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer'; // Exemplo de biblioteca para envio de e-mail
+
+@Injectable()
+export class MailService {
+  constructor(private mailerService: MailerService) {}
+
+  async sendPasswordResetEmail(email: string, resetToken: string) {
+    const resetLink = `/auth/reset-password/${resetToken}`;
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Password Reset Request',
+      template: './password-reset', // Template do e-mail
+      context: { resetLink },
+    });
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/permissions/permissions.controller.ts
+// @file: src/core/permissions/permissions.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
+import { CasbinService } from '@/src/core/casbin/casbin.service';
+import { JwtAuthGuard } from '@/src/core/auth/jwt-auth.guard';
+import { CasbinGuard } from '@/src/core/casbin/casbin.guard';
+
+@Controller('permissions')
+export class PermissionsController {
+  constructor(private readonly casbinService: CasbinService) {}
+
+  @Post('add')
+  @UseGuards(JwtAuthGuard)
+  async addPolicy(
+    @Body() body: { sub: string; obj: string; act: string },
+  ): Promise<void> {
+    const { sub, obj, act } = body;
+    await this.casbinService.addPolicy(sub, obj, act);
+  }
+
+  @Get('can')
+  @UseGuards(JwtAuthGuard, CasbinGuard)
+  async can(
+    @Query('userRole') userRole: string,
+    @Query('resource') resource: string,
+    @Query('action') action: string,
+  ): Promise<boolean> {
+    return await this.casbinService.can(userRole, resource, action);
+  }
+
+  @Get('policies')
+  @UseGuards(JwtAuthGuard)
+  async getAllPolicies(): Promise<any[]> {
+    return await this.casbinService.getAllPolicies();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/prisma/prisma.module.ts
+// @file: src/prisma/prisma.module.ts
+
+import { Module } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/prisma/prisma.service.ts
+// @file: src/prisma/prisma.service.ts
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  async onModuleInit() {
+    await this.$connect();
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/user/dto/create-user.dto.ts
+// @file: src/user/dto/create-user.dto.ts
+
+import { IsString, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+
+export class CreateUserDto {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsOptional()
+  readonly role?: string;
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/user/dto/update-user.dto.ts
+// @file: src/user/dto/update-user.dto.ts
+
+import { PartialType } from '@nestjs/swagger';
+import { CreateUserDto } from '@/src/core/user/dto/create-user.dto';
+
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+  // Pode adicionar mais campos específicos para atualização, se necessário
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/user/user.controller.ts
+// @file: src/user/user.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import { UserService } from '@/src/core/user/user.service';
+import { CreateUserDto } from '@/src/core/user/dto/create-user.dto';
+import { UpdateUserDto } from '@/src/core/user/dto/update-user.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/src/core/auth/jwt-auth.guard';
+import { CasbinGuard } from '@/src/core/casbin/casbin.guard';
+
+@Controller('users')
+@ApiTags('Users')
+@UseGuards(JwtAuthGuard, CasbinGuard)
+@ApiBearerAuth()
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Get multiple users' })
+  @ApiBearerAuth()
+  async findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID' })
+  async findOne(@Param('id', ParseIntPipe) id: string) {
+    return this.userService.findOne(id);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create user by ID' })
+  async create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update user by ID' })
+  async update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a user by ID' })
+  async remove(@Param('id', ParseIntPipe) id: string) {
+    return this.userService.remove(id);
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/user/user.module.ts
+// @file: src/user/user.module.ts
+
+import { Module } from '@nestjs/common';
+import { UserController } from '@/src/core/user/user.controller';
+import { UserService } from '@/src/core/user/user.service';
+import { PrismaModule } from '@/src/core/prisma/prisma.module';
+import { CasbinModule } from '@/src/core/casbin/casbin.module';
+
+@Module({
+  imports: [PrismaModule, CasbinModule],
+  controllers: [UserController],
+  providers: [UserService],
+})
+export class UserModule {}
+
+@file: /home/dev/projects/nestjs-prisma/src/core/user/user.service.ts
+// @file: src/user/user.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@/src/core/prisma/prisma.service';
+import { CreateUserDto } from '@/src/core/user/dto/create-user.dto';
+import { UpdateUserDto } from '@/src/core/user/dto/update-user.dto';
+import { Prisma } from '@prisma/client';
+
+@Injectable()
+export class UserService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.user.findMany();
+  }
+
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    const { role, ...userData } = createUserDto;
+    const data: Prisma.UserCreateInput = {
+      ...userData,
+      role: role ?? undefined, // Defina `role` como `undefined` se não estiver presente
+    };
+    return this.prisma.user.create({ data });
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+  }
+
+  async remove(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return this.prisma.user.delete({ where: { id } });
+  }
+}
+
+@file: /home/dev/projects/nestjs-prisma/src/main.ts
+// @file: src/main.ts
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { XPoweredByMiddleware } from '@/src/common/middleware/x-powered-by.middleware';
+import { env } from '@/config/env';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const port = env('PORT', 4004);
+
+  const config = new DocumentBuilder()
+    .setTitle(env('SWAGGER_TITLE', 'NestJS Prisma API'))
+    .setDescription(env('SWAGGER_DESC', 'The NestJS Prisma API description'))
+    .setVersion(env('SWAGGER_VERSION', '1.0'))
+    .setTermsOfService(env('SWAGGER_TOSLINK', '#'))
+    .setContact(
+      env('SWAGGER_API_EMAIL_TEXT', ''),
+      '',
+      env('SWAGGER_API_EMAIL_EMAIL', ''),
+    )
+    .setLicense(
+      env('SWAGGER_LICENSE_TEXT', 'Apache 2.0'),
+      env(
+        'SWAGGER_LICENSE_LINK',
+        'http://www.apache.org/licenses/LICENSE-2.0.html',
+      ),
+    )
+    .addServer(
+      env('SWAGGER_SERVER_PROD', `http://localhost:${port}`),
+      'Production',
+    )
+    .addServer(
+      env('SWAGGER_SERVER_SANDBOX', `http://localhost:${port}`),
+      'Sandbox',
+    )
+    .addServer(
+      env('SWAGGER_SERVER_LOCAL', `http://localhost:${port}`),
+      'Localhost',
+    )
+    .addBearerAuth()
+    .addTag('Auth', 'Authentication management and account recovery.', {
+      description: 'Documentation',
+      url: 'https://mydocumentation.com/auth',
+    })
+    .addTag(
+      'Users',
+      'User management, including creation, update, and removal.',
+      { description: 'Documentation', url: 'https://mydocumentation.com/user' },
+    )
+    .addTag('Files', 'File management, including uploading and downloading.', {
+      description: 'Documentation',
+      url: 'https://mydocumentation.com/file',
+    })
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup(env('SWAGGER_URL_DOCS', 'docs'), app, document, {
+    customCss: `
+      .swagger-ui .topbar { background-color: #333; }
+      .swagger-ui .topbar img { content: url(${env('SWAGGER_FAVICON', 'favicon.png')}); }`,
+    customSiteTitle: env('SWAGGER_SITE_TITLE', 'Swagger UI'),
+    swaggerOptions: {
+      defaultModelsExpandDepth: -1,
+      defaultModelExpandDepth: -1,
+      docExpansion: 'none',
+    },
+  });
+
+  // Settings CORS
+  // app.enableCors({
+  //   origin: ['https://example.com', 'https://another-domain.com'],
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //   allowedHeaders: 'Content-Type, Authorization',
+  // });
+  app.use(new XPoweredByMiddleware().use);
+
+  console.log(`http://localhost:${port}`);
+
+  await app.listen(port);
+}
+bootstrap();
+
+@file: /home/dev/projects/nestjs-prisma/src/types/prisma.ts
+// @file: src/types/prisma.ts
+// Automatically generated, do not edit manually please!
+
+import { Prisma } from '@prisma/client';
+
+export type FranchiseCenterType = Prisma.FranchiseCenterGetPayload<{}>;
+export type PriceType = Prisma.PriceGetPayload<{}>;
+export type ProductType = Prisma.ProductGetPayload<{}>;
+export type StockType = Prisma.StockGetPayload<{}>;
+export type VariationType = Prisma.VariationGetPayload<{}>;
+export type UserType = Prisma.UserGetPayload<{}>;
+export type FileType = Prisma.FileGetPayload<{}>;
+

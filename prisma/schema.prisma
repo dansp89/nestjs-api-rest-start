@@ -1,0 +1,116 @@
+// @file: prisma/schema.prisma
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  role             String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  permissions RolePermission[] @relation("RolePermissionsRelation")
+}
+
+model Permission {
+  id    String           @id @default(uuid())
+  name  String           @unique
+  roles RolePermission[] @relation("PermissionRolesRelation")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation("RolePermissionsRelation", fields: [roleId], references: [id])
+  permission   Permission @relation("PermissionRolesRelation", fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Personalizados!
+
+model Product {
+  id                String          @id @default(uuid())
+  name              String
+  description       String?
+  variations        Variation[]
+  stock             Stock[]
+  franchiseCenter   FranchiseCenter @relation(fields: [franchiseCenterId], references: [id])
+  franchiseCenterId String
+  prices            Price[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // @@map("products") // Nome da tabela no banco de dados
+}
+
+model Variation {
+  id        String   @id @default(uuid())
+  name      String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("variations") // Nome da tabela no banco de dados
+}
+
+model Stock {
+  id        String   @id @default(uuid())
+  quantity  Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("stock") // Nome da tabela no banco de dados
+}
+
+model FranchiseCenter {
+  id        String    @id @default(uuid())
+  name      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // @@map("franchise_centers") // Nome da tabela no banco de dados
+}
+
+model Price {
+  id        String   @id @default(uuid())
+  amount    Float
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // @@map("prices") // Nome da tabela no banco de dados
+}

@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "prisma.prisma",
+    "willluke.nextjs",
+    "esbenp.prettier-vscode",
+    "mechatroner.rainbow-csv"
+  ]
+}
