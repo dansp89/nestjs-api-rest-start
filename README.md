@@ -35,27 +35,31 @@ $ yarn install
 ## Compile and run the project
 
 ```bash
+
+# After creating the models in scheme.prisma, generate the basic CRUD (For swagger)
+$ yarn crud
+
 # development
-$ yarn run start
+$ yarn start
 
 # watch mode
-$ yarn run start:dev
+$ yarn start:dev
 
 # production mode
-$ yarn run start:prod
+$ yarn start:prod
 ```
 
 ## Run tests
 
 ```bash
 # unit tests
-$ yarn run test
+$ yarn test
 
 # e2e tests
-$ yarn run test:e2e
+$ yarn test:e2e
 
 # test coverage
-$ yarn run test:cov
+$ yarn test:cov
 ```
 
 ## Resources
